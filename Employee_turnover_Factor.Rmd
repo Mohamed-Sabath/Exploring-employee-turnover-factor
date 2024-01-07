@@ -1,0 +1,340 @@
+---
+title: "ADDS_project"
+output: html_document
+date: "2023-04-10"
+---
+
+
+##COADDS22.1F--017
+
+#Reading the data set
+```{r}
+library(dplyr)
+library(ggplot2)
+employee_raw_data = read.csv("HR_Analytics.csv")
+View(employee_raw_data )
+```
+
+#Extracting the using variables
+```{r}
+employee_new_data <- data.frame(employee_raw_data$JobSatisfaction,employee_raw_data$Attrition,employee_raw_data$OverTime,employee_raw_data$EnvironmentSatisfaction,employee_raw_data$HourlyRate,employee_raw_data$Education,employee_raw_data$WorkLifeBalance)
+
+View(employee_new_data)
+
+```
+
+#Visualization the variables seperately
+```{r}
+#Contingency table for attrition
+table1 <- table(employee_new_data$employee_raw_data.Attrition)
+table1
+```
+```{r}
+# Plot the bar chart
+barplot(table1,beside = F,
+        col=rainbow(2),
+        legend=rownames(table1),
+        main="Barplot of Attrition Variable",
+        xlab="Attrition",
+        ylab="frequency")
+abline(h=0)
+
+```
+
+## Filter the dataframe to include only employees who have left the organization
+
+```{r}
+left_df <- subset(employee_new_data,employee_new_data$employee_raw_data.Attrition == "Yes")
+```
+
+## Counting the number of occurrences of each education level of the employees who left the organization.
+```{r}
+edu_counts = table(left_df$employee_raw_data.Education)
+edu_counts
+```
+#Plotting pie chart to identify the level of education of the employees who left the organization
+```{r}
+catego <- c("Below college", "College", "Bachelor", "Master","Doctor")
+val <- c(31,44,99,58,5)
+pie(val, labels = catego, main = "Pie Chart for educational level")
+
+
+```
+
+
+```{r}
+#Contingency table for Overtime
+table2 <- table(employee_new_data$employee_raw_data.OverTime)
+table2
+```
+#Creating Bar plot for Over time variable
+```{r}
+# Plot the bar chart
+barplot(table2,beside = F,
+        col=rainbow(2),
+        legend=rownames(table2),
+        main="Barplot of Overtime Variable",
+        xlab="Overtime",
+        ylab="frequency")
+abline(h=0)
+```
+
+```{r}
+#Create histogram for HourlyRate
+hist(employee_new_data$employee_raw_data.HourlyRate,col="lightblue", 
+     main = "Histogram of HourlyRate")
+abline(h=0)
+```
+
+```{r}
+#Contingency table for job satisfaction
+table3 <- table(employee_new_data$employee_raw_data.JobSatisfaction)
+table3
+```
+```{r}
+# Plotting the bar chart for Job satisfaction variable
+barplot_data2 <- barplot(table3, beside = T,
+                         col = rainbow(4),
+                         legend = rownames(table3),
+                         main = "Barplot of Job satisfaction Variable",
+                         xlab = "Level of Job Satisfaction",
+                         ylab = "frequency",
+                         ylim = c(0, max(table3) + 20)) # Extend the y-axis range
+abline(h = 0)
+
+
+text(x = barplot_data2, y = table3 + 2, label = table3, cex = 1, col = "black")
+
+```
+```{r}
+#Contingency table for environment satisfaction
+table4 <- table(employee_new_data$employee_raw_data.EnvironmentSatisfaction)
+table4
+```
+```{r}
+# Plotting the bar chart for environment satisfaction variable
+barplot_data3 <- barplot(table4, beside = F,
+                         col = c("#FF6666", "#FFCC66", "#66FF66", "#66CCFF"),
+                         legend = rownames(table4),
+                         main = "Barplot of environment satisfaction Variable",
+                         xlab = "Level of environment satisfaction",
+                         ylab = "frequency",
+                         ylim = c(0, max(table4) + 20)) # Extend the y-axis range
+abline(h = 0)
+
+
+text(x = barplot_data3, y = table4 + 2, label = table4, cex = 1, col = "black")
+
+```
+```{r}
+#Contingency table for work-life balance
+table5 <- table(employee_new_data$employee_raw_data.WorkLifeBalance)
+table5
+```
+```{r}
+# Plotting the bar chart for work-life balance
+barplot_data <- barplot(table5, beside = F,
+                        col = rainbow(4),
+                        legend = names(table5),
+                        main = "Barplot of work-life balance",
+                        xlab = "work-life balance",
+                        ylab = "frequency",
+                        ylim = c(0, max(table5) + 20)) # Extend the y-axis range
+abline(h = 0)
+
+# Adding data labels to the bar plot
+text(x = barplot_data, y = table5 + 2, label = table5, cex = 1, col = "black")
+
+
+
+
+```
+
+#Main Objectives
+
+#Main Objective1 - Identifying is there an impact on employee attrition from the selected job-related factors.
+
+#Sub objective 1 - Identifying is there a relationship between job satisfaction and attrition.
+
+```{r}
+#Here dependent variable is attrition and the independent variable is job satisfaction
+
+#Null hypothesis (H0) -There are no relationship between job satisfaction and attrition. 
+#Alternative hypothesis (H1) - -	There is a relationship between job satisfaction and attrition. 
+
+table <- table(employee_new_data$employee_raw_data.JobSatisfaction,employee_new_data$employee_raw_data.Attrition)
+table
+
+test <- chisq.test(table)
+
+test
+
+```
+```{r}
+#For this, p-value is less than 0.05. So we can reject null hypothesis. Which means,There is a relationship between job satisfaction and attrition variables.
+```
+#Visualizing the output using a heatmap.
+
+```{r}
+ggplot(as.data.frame(table), aes(x = Var1, y = Var2, fill = Freq)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "steelblue") +
+  labs(x = "Job Satisfaction", y = "Attrition", fill = "Frequency") +
+  ggtitle("Heatmap of Job Satisfaction vs Attrition")
+```
+```{r}
+#In here, Cells with higher frequencies will be represented by darker colors on the heatmap, while cells with lower frequencies will be lighter.
+#Here the cell corresponding to high Job Satisfaction and Attrition = No has a high frequency, it means that many employees with high job satisfaction did not leave the company.The cell corresponding to low Job Satisfaction and Attrition = no has a low frequency, it means that only fewer employees with low job satisfaction did not leave the company.
+
+```
+
+
+#Sub objective 2 - Identifying is there a relationship between working overtime and attrition
+
+```{r}
+#Here dependent variable is attrition and the independent variable is working overtime
+
+#Null hypothesis (H0) -There are no relationship between overtime and attrition. 
+#Alternative hypothesis (H1) - -	There is a relationship between overtime and attrition. 
+
+table1 <- table(employee_new_data$employee_raw_data.OverTime,employee_new_data$employee_raw_data.Attrition)
+table1
+
+test1 <- chisq.test(table1)
+
+test1
+```
+
+```{r}
+#For this, p-value is less than 0.05. So we can reject null hypothesis. Which means,There is a relationship between working overtime and attrition variables.
+```
+#Visualizing the output using a heatmap.
+
+```{r}
+ggplot(as.data.frame(table1), aes(x = Var1, y = Var2, fill = Freq)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "steelblue") +
+  labs(x = "Working Overtime", y = "Attrition", fill = "Frequency") +
+  ggtitle("Heatmap of Working Overtime vs Attrition")
+
+```
+```{r}
+#A high frequency in a cell indicates that there are many occurrences of that specific combination of Working Overtime and Attrition levels. The cell corresponding to "Working Overtime = No" and "Attrition = No" has a high frequency, it means that many employees who did not work overtime don't have attrition which means they did not leave the company. In other word we can say that,
+
+#A low frequency in a cell indicates that there are fewer occurrences of that specific combination of Working Overtime and Attrition levels. The cell corresponding to "Working Overtime = Yes" and "Attrition = No" has a low frequency, it means that there are only fewer employees who worked overtime did not leave the company
+```
+
+#Sub objective 3 - Identifying is there a relationship between Environment satisfaction and attrition
+```{r}
+#Here dependent variable is attrition and the independent variable is environment satisfaction variable
+
+#Null hypothesis (H0) -There are no relationship between environment satisfaction and attrition. 
+#Alternative hypothesis (H1) - -	There is a relationship between environment satisfaction and attrition.
+
+table2 <- table(employee_new_data$employee_raw_data.EnvironmentSatisfaction,employee_new_data$employee_raw_data.Attrition)
+table2
+
+test2 <- chisq.test(table2)
+
+test2
+```
+
+```{r}
+#For this, p-value is less than 0.05. So we can reject null hypothesis. Which means,There is a relationship between envirionment satisfaction and attrition variables.
+```
+#Visualizing the output using heatmap
+
+```{r}
+ggplot(as.data.frame(table2), aes(x = Var1, y = Var2, fill = Freq)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "steelblue") +
+  labs(x = "Environment Satisfaction", y = "Attrition", fill = "Frequency") +
+  ggtitle("Heatmap of Environment Satisfaction vs Attrition")
+
+```
+```{r}
+#A high frequency in a cell indicates that there are many occurrences of that specific combination of Environment Satisfaction level and Attrition status. The cell corresponding to "Environment Satisfaction = 3 and 4" and "Attrition = No" has a high frequency, it means that many employees with a level 3 and 4 environment satisfaction did not leave the company(They do not have attrition)
+#Inother word, A low frequency in a cell indicates that there are fewer occurrences of that specific combination of Environment Satisfaction level and Attrition status. The cell corresponding to "Environment Satisfaction = 2 and 1" and "Attrition = NO" has a low frequency, it means that fewer employees with a level 2 and 1 environment satisfaction are staying in the company which means so many left the company.
+```
+
+
+#Sub objective 4 - Identifying is there a relationship between Hourly rate and attrition
+```{r}
+#Here dependent variable is attrition and the independent variable is Hourly rate of pay variable
+
+#Null hypothesis (H0) -There are no relationship between Hourly rate and attrition. 
+#Alternative hypothesis (H1) - -	There is a relationship between Hourly rate of and attrition.
+# View unique values in the dependent variable
+unique(employee_new_data$employee_raw_data.Attrition)
+
+# Convert "Yes" to 1 and "No" to 0
+employee_new_data$employee_raw_data.Attrition <- as.numeric(employee_new_data$employee_raw_data.Attrition == "Yes")
+
+# Check the updated unique values
+unique(employee_new_data$employee_raw_data.Attrition)
+
+
+
+
+```
+```{r}
+# Fit logistic regression model
+model <- glm(employee_new_data$employee_raw_data.Attrition ~ employee_new_data$employee_raw_data.HourlyRate, data = employee_raw_data, family = "binomial")
+
+# Summarize the model
+summary(model)
+
+```
+
+```{r}
+#Based on the output of the logistic regression model, we have a non-significant p-value (0.793), which suggests that there is a relationship between Hourly Rate and Attrition.
+```
+#Visualizing the output using boxplot
+```{r}
+ggplot(employee_new_data1, aes(x = employee_raw_data.Attrition, y = employee_raw_data.HourlyRate)) +
+  geom_boxplot() +
+  labs(x = "Attrition", y = "Hourly Rate") +
+  ggtitle("Boxplot of Hourly Rate vs Attrition")
+
+```
+
+#Since the Logistic regression test suggests no significant relationship,  we do not have substantial differences in the boxplot. 
+
+
+#Main objective 3 - Evaluate is there a relationship between an employee's perception of their work-life balance and their attrition.
+```{r}
+#Here dependent variable is attrition and the independent variable is work-life balance variable
+
+#Null hypothesis (H0) -There are no relationship between work-life balance variable and attrition. 
+#Alternative hypothesis (H1) - -	There is a relationship between work-life balance variable and attrition.
+
+table6 <- table(employee_new_data$employee_raw_data.WorkLifeBalance,employee_new_data$employee_raw_data.Attrition)
+table6
+
+test6 <- chisq.test(table6)
+
+test6
+```
+```{r}
+#For this, p-value is less than 0.05. So we can reject null hypothesis. Which means,There is a relationship between employees perception about their work-life balance and attrition variables.
+```
+#Visualizing the output using heatmap
+
+```{r}
+ggplot(as.data.frame(table6), aes(x = Var1, y = Var2, fill = Freq)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "steelblue") +
+  labs(x = "Work-Life Balance", y = "Attrition", fill = "Frequency") +
+  ggtitle("Heatmap of Work-Life Balance vs Attrition")
+
+```
+```{r}
+#A high frequency in a cell indicates that there are many occurrences of that specific combination of Work-Life Balance level and Attrition status. The cell corresponding to "Work-Life Balance = 3" and "Attrition = No" has a high frequency, it means that many employees with a level 3 work-life balance did not leave the company (they did not have attrition).
+
+#A low frequency in a cell indicates that there are fewer occurrences of that specific combination of Work-Life Balance level and Attrition status. For example, if the cell corresponding to "Work-Life Balance = 1" and "Attrition = Yes" has a low frequency, it means that fewer employees with a level 1 work-life balance left the company (experienced attrition).
+```
+```{r}
+R.version
+
+```
+
